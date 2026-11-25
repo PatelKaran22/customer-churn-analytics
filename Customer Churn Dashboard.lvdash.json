@@ -1,0 +1,973 @@
+{
+  "datasets": [
+    {
+      "name": "ac792201",
+      "displayName": "Risk_distribution",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT \n",
+        "    CASE \n",
+        "        WHEN churn_probability >= 0.7 THEN 'High Risk'\n",
+        "        WHEN churn_probability >= 0.4 THEN 'Medium Risk'\n",
+        "        ELSE 'Low Risk'\n",
+        "    END AS risk_segment,\n",
+        "    COUNT(*) AS customers\n",
+        "FROM workspace.default.churn_predictions\n",
+        "GROUP BY risk_segment;"
+      ]
+    },
+    {
+      "name": "523c8495",
+      "displayName": "geo_churn",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT \n",
+        "    Geography,\n",
+        "    ROUND(AVG(churn_probability), 1) AS churn_rate_pct,\n",
+        "    COUNT(*) AS customers\n",
+        "FROM workspace.default.churn_predictions\n",
+        "GROUP BY Geography\n",
+        "ORDER BY churn_rate_pct DESC;"
+      ]
+    },
+    {
+      "name": "23c3e986",
+      "displayName": "product_churn",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT \n",
+        "    NumOfProducts,\n",
+        "    ROUND(AVG(churn_probability) * 100, 1) AS churn_rate_pct,\n",
+        "    COUNT(*) AS customers\n",
+        "FROM workspace.default.churn_predictions\n",
+        "GROUP BY NumOfProducts\n",
+        "ORDER BY churn_rate_pct DESC;"
+      ]
+    },
+    {
+      "name": "0dc7b1bb",
+      "displayName": "high_risk_customers",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT \n",
+        "    CustomerId,\n",
+        "    Geography,\n",
+        "    Balance,\n",
+        "    NumOfProducts,\n",
+        "    IsActiveMember,\n",
+        "    ROUND(churn_probability * 100, 1) AS churn_risk_pct\n",
+        "FROM workspace.default.churn_predictions\n",
+        "WHERE churn_probability >= 0.7\n",
+        "ORDER BY churn_risk_pct DESC;"
+      ]
+    },
+    {
+      "name": "d3ae1b10",
+      "displayName": "revenue_risk",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT \n",
+        "    ROUND(SUM(Balance), 2) AS total_balance,\n",
+        "    ROUND(SUM(CASE WHEN churn_probability >= 0.7 THEN Balance ELSE 0 END), 2) AS high_risk_balance\n",
+        "FROM workspace.default.churn_predictions;"
+      ]
+    },
+    {
+      "name": "dbe9d1f1",
+      "displayName": "revenue_risk",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT \n",
+        "    ROUND(SUM(Balance), 2) AS total_balance,\n",
+        "    ROUND(SUM(CASE WHEN churn_probability >= 0.7 THEN Balance ELSE 0 END), 2) AS high_risk_balance\n",
+        "FROM workspace.default.churn_predictions;"
+      ]
+    },
+    {
+      "name": "96886e44",
+      "displayName": "revenue_risk(%)",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT \n",
+        "    ROUND(\n",
+        "        100 * SUM(CASE WHEN churn_probability >= 0.7 THEN Balance ELSE 0 END) \n",
+        "        / SUM(Balance), \n",
+        "    2) AS revenue_at_risk_pct\n",
+        "FROM workspace.default.churn_predictions;"
+      ]
+    },
+    {
+      "name": "14af0a7a",
+      "displayName": "Untitled dataset",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "-- Query 1: KPI\n",
+        "SELECT \n",
+        "    COUNT(*) AS total_customers,\n",
+        "    SUM(CASE WHEN churn_probability >= 0.7 THEN 1 ELSE 0 END) AS high_risk_customers,\n",
+        "    ROUND(AVG(churn_probability) * 100, 1) AS avg_churn_probability_pct\n",
+        "FROM workspace.default.churn_predictions;"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "customer_churn_analytics",
+      "displayName": "Churn Dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "9b118391",
+            "queries": [
+              {
+                "name": "341951f88c9b47e0ba3d16c51e1bd03b",
+                "query": {
+                  "datasetName": "ac792201",
+                  "fields": [
+                    {
+                      "name": "risk_segment",
+                      "expression": "`risk_segment`"
+                    },
+                    {
+                      "name": "column_6fa2403e162",
+                      "expression": "SUM(`customers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 0,
+              "viz_spec": {
+                "display_name": "Risk Distribution",
+                "viz_type": "CHART",
+                "serialized_options": "{\"isAggregationOn\":true,\"series\":{\"error_y\":{\"type\":\"data\",\"visible\":true},\"stacking\":null},\"coefficient\":1,\"yAxis\":[{\"type\":\"-\"},{\"opposite\":true,\"type\":\"-\"}],\"columnConfigurationMap\":{\"x\":{\"column\":\"risk_segment\",\"id\":\"column_6fa2403e161\"},\"y\":[{\"column\":\"customers\",\"id\":\"column_6fa2403e162\",\"transform\":\"SUM\"}]},\"alignYAxesAtZero\":true,\"direction\":{\"type\":\"counterclockwise\"},\"swappedAxes\":false,\"percentFormat\":\"0[.]00%\",\"textFormat\":\"\",\"legend\":{\"traceorder\":\"normal\"},\"globalSeriesType\":\"pie\",\"version\":2,\"sizemode\":\"diameter\",\"seriesOptions\":{\"column_6fa2403e162\":{\"name\":\"customers\",\"type\":\"pie\",\"yAxis\":0}},\"error_y\":{\"type\":\"data\",\"visible\":true},\"sortX\":true,\"showDataLabels\":true,\"missingValuesAsZero\":true,\"useAggregationsUi\":true,\"numberFormat\":\"0,0.[00000]\",\"dateTimeFormat\":\"DD/MM/YYYY HH:mm\",\"sortY\":true,\"valuesOptions\":{\"High Risk\":{\"color\":\"#FF3621\"},\"Low Risk\":{\"color\":\"#00A972\"},\"Medium Risk\":{\"color\":\"#FF8C00\"}},\"xAxis\":{\"labels\":{\"enabled\":true},\"type\":\"-\"}}",
+                "query_name": "341951f88c9b47e0ba3d16c51e1bd03b"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 4,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "6e0d4e4f",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "523c8495",
+                  "fields": [
+                    {
+                      "name": "churn_rate_pct",
+                      "expression": "`churn_rate_pct`"
+                    },
+                    {
+                      "name": "Geography",
+                      "expression": "`Geography`"
+                    },
+                    {
+                      "name": "sum(churn_rate_pct)",
+                      "expression": "SUM(`churn_rate_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Churn by Geography",
+                "showTitle": true
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "Geography",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(churn_rate_pct)",
+                  "axis": {
+                    "title": "Churn Rate (%)"
+                  },
+                  "displayName": "customers",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true,
+                  "text": {
+                    "fieldName": "churn_rate_pct",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 2
+                      }
+                    },
+                    "displayName": "customers"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 3,
+            "width": 4,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "2ad2d6cf",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "23c3e986",
+                  "fields": [
+                    {
+                      "name": "NumOfProducts",
+                      "expression": "`NumOfProducts`"
+                    },
+                    {
+                      "name": "avg(churn_rate_pct)",
+                      "expression": "AVG(`churn_rate_pct`)"
+                    },
+                    {
+                      "name": "sum(customers)",
+                      "expression": "SUM(`customers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "mark": {
+                "layout": "group",
+                "colors": [
+                  "#077A9D",
+                  "#FFAB00"
+                ]
+              },
+              "frame": {
+                "title": "Churn by Product",
+                "showTitle": true
+              },
+              "widgetType": "combo",
+              "encodings": {
+                "x": {
+                  "fieldName": "NumOfProducts",
+                  "axis": {
+                    "title": "No. of Prodcuts"
+                  },
+                  "displayName": "No. of Prodcuts",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {},
+                "label": {
+                  "show": true
+                },
+                "y": {
+                  "primary": {
+                    "fields": [
+                      {
+                        "fieldName": "avg(churn_rate_pct)",
+                        "displayName": "Churn Rate (%)"
+                      }
+                    ],
+                    "scale": {
+                      "type": "quantitative"
+                    },
+                    "axis": {
+                      "title": "Churn Rate (%)"
+                    }
+                  },
+                  "secondary": {
+                    "fields": [
+                      {
+                        "fieldName": "sum(customers)",
+                        "displayName": "Customers"
+                      }
+                    ],
+                    "scale": {
+                      "type": "quantitative"
+                    },
+                    "axis": {
+                      "title": "Customers Count"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 3,
+            "width": 4,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "fa8f5c7a",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "0dc7b1bb",
+                  "fields": [
+                    {
+                      "name": "CustomerId",
+                      "expression": "`CustomerId`"
+                    },
+                    {
+                      "name": "Geography",
+                      "expression": "`Geography`"
+                    },
+                    {
+                      "name": "Balance",
+                      "expression": "`Balance`"
+                    },
+                    {
+                      "name": "NumOfProducts",
+                      "expression": "`NumOfProducts`"
+                    },
+                    {
+                      "name": "IsActiveMember",
+                      "expression": "`IsActiveMember`"
+                    },
+                    {
+                      "name": "churn_risk_pct",
+                      "expression": "`churn_risk_pct`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "High-Risk Customer",
+                "showTitle": true
+              },
+              "rowsPerPage": 50,
+              "displayRowNumbers": true,
+              "freezeUpToColumnNumber": 0,
+              "headerHeight": 30,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "CustomerId",
+                    "useForSearch": false,
+                    "format": {
+                      "type": "numeral.js",
+                      "format": "0"
+                    },
+                    "displayName": "Customer Id",
+                    "actions": {
+                      "hover": {
+                        "type": "tooltip",
+                        "tooltipTemplate": "{{ @ }}"
+                      }
+                    },
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": ""
+                            },
+                            "operator": "="
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fieldName": "Geography",
+                    "useForSearch": false,
+                    "actions": {
+                      "hover": {
+                        "type": "tooltip",
+                        "tooltipTemplate": "{{ @ }}"
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "Balance",
+                    "useForSearch": false,
+                    "format": {
+                      "type": "numeral.js",
+                      "format": "0.00"
+                    },
+                    "actions": {
+                      "hover": {
+                        "type": "tooltip",
+                        "tooltipTemplate": "{{ @ }}"
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "NumOfProducts",
+                    "useForSearch": false,
+                    "format": {
+                      "type": "numeral.js",
+                      "format": "0"
+                    },
+                    "displayName": "No. of Products",
+                    "actions": {
+                      "hover": {
+                        "type": "tooltip",
+                        "tooltipTemplate": "{{ @ }}"
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "IsActiveMember",
+                    "useForSearch": false,
+                    "format": {
+                      "type": "numeral.js",
+                      "format": "0"
+                    },
+                    "displayName": "Is Active Member",
+                    "actions": {
+                      "hover": {
+                        "type": "tooltip",
+                        "tooltipTemplate": "{{ @ }}"
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "churn_risk_pct",
+                    "useForSearch": false,
+                    "format": {
+                      "type": "numeral.js",
+                      "format": "0.\\%",
+                      "scalePercentBy100": false
+                    },
+                    "displayName": "Churn Risk (%)",
+                    "actions": {
+                      "hover": {
+                        "type": "tooltip",
+                        "tooltipTemplate": "{{ @ }}"
+                      }
+                    },
+                    "style": {
+                      "type": "basic",
+                      "rules": [
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "80"
+                            },
+                            "operator": ">="
+                          },
+                          "foregroundColor": "#E92828"
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "70"
+                            },
+                            "operator": ">="
+                          },
+                          "foregroundColor": "#FB8D3D"
+                        },
+                        {
+                          "condition": {
+                            "operand": {
+                              "type": "data-value",
+                              "value": "60"
+                            },
+                            "operator": ">="
+                          },
+                          "foregroundColor": "#FFFF00"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "ac559afd",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "d3ae1b10",
+                  "fields": [
+                    {
+                      "name": "total_balance",
+                      "expression": "`total_balance`"
+                    },
+                    {
+                      "name": "high_risk_balance",
+                      "expression": "`high_risk_balance`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "High-Risk Balance",
+                "showTitle": true,
+                "description": "",
+                "showDescription": false
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "high_risk_balance",
+                  "rowNumber": 1,
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  }
+                },
+                "target": {
+                  "fieldName": "total_balance",
+                  "rowNumber": 1,
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "change": {
+                    "type": "percent"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 1,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "571e8135",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dbe9d1f1",
+                  "fields": [
+                    {
+                      "name": "total_balance",
+                      "expression": "`total_balance`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Balance",
+                "showTitle": true,
+                "description": "",
+                "showDescription": false
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_balance",
+                  "rowNumber": 1,
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 5,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "33ddae76",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "96886e44",
+                  "fields": [
+                    {
+                      "name": "revenue_at_risk_pct",
+                      "expression": "`revenue_at_risk_pct`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Revenue at Risk (%)",
+                "showTitle": true,
+                "description": "Revenue at Risk",
+                "showDescription": false
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "revenue_at_risk_pct",
+                  "rowNumber": 1,
+                  "style": {
+                    "rules": [
+                      {
+                        "condition": {
+                          "operator": ">="
+                        },
+                        "color": "#00A972"
+                      },
+                      {
+                        "condition": {
+                          "operator": ">="
+                        },
+                        "color": "#00A972"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 7,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "a899b2c1",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## <span style=\"text-align:center;display:block\"><span style=\"font-size: 24px;font-family: Arial;\">**Customer Churn Dashboard**</span></span>"
+              ]
+            },
+            "specExtensions": {
+              "widgetBackgroundColor": {
+                "light": "#F7EAEA"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "8c0299bb",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "14af0a7a",
+                  "fields": [
+                    {
+                      "name": "total_customers",
+                      "expression": "`total_customers`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Customers",
+                "showTitle": true,
+                "description": "Total Customers ",
+                "showDescription": false
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_customers",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "rowNumber": 1
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "7f98b15a",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "14af0a7a",
+                  "fields": [
+                    {
+                      "name": "high_risk_customers",
+                      "expression": "`high_risk_customers`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "High Risk Customers",
+                "showTitle": true,
+                "description": "High Risk Customers",
+                "showDescription": false
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "high_risk_customers",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "rowNumber": 1
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "1f2b2f06",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "f17d007f",
+            "queries": [
+              {
+                "name": "dashboards/01f13f52b8f21ffa97314cf68601be18/datasets/01f13f61a28c1482ad5d5cbbc37660d5_Geography",
+                "query": {
+                  "datasetName": "523c8495",
+                  "fields": [
+                    {
+                      "name": "Geography",
+                      "expression": "`Geography`"
+                    },
+                    {
+                      "name": "Geography_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "showDescription": false
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Geography",
+                    "queryName": "dashboards/01f13f52b8f21ffa97314cf68601be18/datasets/01f13f61a28c1482ad5d5cbbc37660d5_Geography"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "0557d0b0",
+            "queries": [
+              {
+                "name": "dashboards/01f13f52b8f21ffa97314cf68601be18/datasets/01f13f619006136d908022e0e644d3dd_risk_segment",
+                "query": {
+                  "datasetName": "ac792201",
+                  "fields": [
+                    {
+                      "name": "risk_segment",
+                      "expression": "`risk_segment`"
+                    },
+                    {
+                      "name": "risk_segment_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "risk_segment",
+                    "queryName": "dashboards/01f13f52b8f21ffa97314cf68601be18/datasets/01f13f619006136d908022e0e644d3dd_risk_segment"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FAFAFB",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "widgetBorderColor": {
+        "dark": "#DCE3E9"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#8ACAFF"
+      },
+      "widgetHeaderAlignment": "CENTER"
+    },
+    "applyModeEnabled": false
+  }
+}
