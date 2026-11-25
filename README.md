@@ -64,7 +64,6 @@ customer-churn-analytics/
 ├── 04_product_churn.sql                     # Churn rate by number of products
 ├── 05_high_risk_customers.sql               # High-risk customer list
 ├── 06_revenue_at_risk.sql                   # Balance held by high-risk customers
-├── 07_revenue_at_risk_pct.sql               # Revenue at risk as a % of total
 ├── Customer Churn Dashboard.lvdash.json     # Databricks AI/BI dashboard
 ├── images/                                  # Screenshots used in this README
 └── README.md
@@ -138,13 +137,6 @@ The **Customer Churn Dashboard** is built from the SQL queries in this repo and 
 - **High-risk customer table:** customers ranked by churn probability
 - **Global filters:** geography and risk segment
 
-## How to run
-
-1. Clone this repo into Databricks: **Workspace → Create → Git folder** → paste the repo URL.
-2. Upload the dataset and create the source table in Unity Catalog (`workspace.default`).
-3. Run the notebooks in order, `01` to `07`, on serverless compute or a cluster.
-4. Open the MLflow experiment to compare runs.
-5. Run the `.sql` queries in the SQL editor, or import the dashboard file.
 
 ## Future improvements
 
